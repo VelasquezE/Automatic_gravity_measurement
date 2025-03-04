@@ -1,4 +1,5 @@
 int measurements = 0;
+bool stopFlag = false;
 
 unsigned long t0 = 0; //time of first pass in same oscillation
 unsigned long t1 = 0; // time of second pass in same oscillation
@@ -17,6 +18,7 @@ bool waitToMeasure();
 float calculatePeriod();
 void initializeSetup();
 void holdReleasePendulum();
+void stopMeasuring();
 
 void setup() {
   Serial.begin(9600);
@@ -24,12 +26,14 @@ void setup() {
 }
 
 void loop() {
+  if (stopFlag) return; // ends the program after completed the repetitions
+
   photoresistorReading = analogRead(photoresistorPin);
-  void initializeSetup();
+  initializeSetup();
 
   if (detectPendulum(photoresistorReading))
   {
-    if (waitToMeasure)
+    if (waitToMeasure())
     { 
       switch (detectionCounterSameOscillation){
         case 0:
@@ -47,6 +51,7 @@ void loop() {
           holdReleasePendulum();
 
           detectionCounterSameOscillation = 0;
+          measurements++;
           break;
       }
     }
@@ -88,8 +93,8 @@ bool waitToMeasure()
 
 float calculatePeriod()
 {
-  static float period = 0;
-  period = (2 * (t1 - t0)) / 1e-6; // [s]
+  float period = 0;
+  period = (2 * (t1 - t0)) * 1e-6; // [s]
 
   return period;
 }
@@ -125,10 +130,11 @@ void holdReleasePendulum()
 
 void stopMeasuring()
 {
-  const int repetitions = 10;
-  while (measurements = repetitions)
+  const int repetitions = 5;
+  if (measurements >= repetitions)
   {
     digitalWrite(electromagnetPin, LOW);
+    stopFlag = true;
   }
 }
 
