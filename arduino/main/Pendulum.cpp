@@ -1,5 +1,39 @@
 #include "Pendulum.h"
 
+void Pendulum::update()
+{  
+  if (stopFlag) return;
+  
+  int photoresistorReading = analogRead(PHOTORESISTOR_PIN);
+
+  if (detectPendulum(photoresistorReading))
+  {
+    if (waitToMeasure())
+    { 
+      switch (detectionCounterSameOscillation){
+        case 0:
+          t0 = micros();
+          detectionCounterSameOscillation++;
+          break;
+        case 1:
+          t1 = micros();
+
+          float period = calculatePeriod();
+          Serial.println(period, 4);
+
+          detectionCounterSameOscillation = 0;
+          measurements++;
+          break;
+      }
+    }
+    
+  }
+
+  holdReleasePendulum();
+  
+  stopMeasuring();
+}
+
 bool Pendulum::detectPendulum(int photoresistorReading)
 {
   if (photoresistorReading < THRESHOLD)
@@ -34,50 +68,31 @@ float Pendulum::calculatePeriod()
   return period;
 }
 
-void Pendulum::initializeSetup()
-{
-  /* Holds the pendulum when the program starts
-    and releases it after 10s to start taking
-    measurements
-  */
-  if (isFirstRun)
-  {
-    digitalWrite(ELECTROMAGNET_PIN, HIGH);
-    // Waits 6 seconds before starting measurement
-    unsigned long startTime = millis();
-    while (millis() - startTime < 6000)
-    {
-
-    }
-    digitalWrite(ELECTROMAGNET_PIN, LOW);
-  }
-
-  isFirstRun = false; 
-}
-
 void Pendulum::holdReleasePendulum()
 {
   /* Holds whem measurement is over, waits, 
      and releases again
   */
-  static unsigned long holdStartTime = 0;
-  static bool isWaiting = false;
   unsigned long currentTime = millis();
+  static int lastState = 0;
+  static unsigned long timeElectromagnetTurnOn = 0;
 
-  if (!isWaiting)
+  if (currentTime - timeElectromagnetTurnOn > 3000)
   {
-    digitalWrite(ELECTROMAGNET_PIN, HIGH);
-    holdStartTime = currentTime;
-    isWaiting = true;
-  }
+    timeElectromagnetTurnOn = currentTime;
 
-  // Wait 3 seconds before realeasing again
-  if (isWaiting && (currentTime - holdStartTime >= 3000))
-  {
-    digitalWrite(ELECTROMAGNET_PIN, LOW);
-    isWaiting = false;
-  }
-
+    if (lastState == 0)
+    {
+      digitalWrite(ELECTROMAGNET_PIN, HIGH);
+      lastState = 1;
+    }
+    else
+    {
+      digitalWrite(ELECTROMAGNET_PIN, LOW);
+      lastState = 0;
+    }
+  }  
+  
 }
 
 void Pendulum::stopMeasuring()
@@ -90,39 +105,4 @@ void Pendulum::stopMeasuring()
   }
 }
 
-void Pendulum::update()
-{
-  if (stopFlag) return; // ends the program after completed the repetitions
 
-  int photoresistorReading = analogRead(PHOTORESISTOR_PIN);
-
-  initializeSetup();
-
-  if (detectPendulum(photoresistorReading))
-  {
-    if (waitToMeasure())
-    { 
-      switch (detectionCounterSameOscillation){
-        case 0:
-          t0 = micros();
-          detectionCounterSameOscillation++;
-          break;
-        case 1:
-          t1 = micros();
-
-          float period = calculatePeriod();
-          Serial.print("Period: ");
-          Serial.println(period, 3);
-
-          // activate electromagnet
-          holdReleasePendulum();
-
-          detectionCounterSameOscillation = 0;
-          measurements++;
-          break;
-      }
-    }
-  }
-
-  stopMeasuring();
-}

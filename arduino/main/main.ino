@@ -8,7 +8,10 @@ void setup() {
 }
 
 void loop() {
+  
   pendulum.update();
+
+  delay(1);
 }
 
 

@@ -14,14 +14,12 @@ private:
 
 public:
   void update();
-
 private:
   bool detectPendulum(int photoresistorReading);
   bool waitToMeasure();
   float calculatePeriod();
   void initializeSetup();
   void holdReleasePendulum();
-  void stopMeasuring();
+  void stopMeasuring(); 
 };
-
 
