@@ -76,4 +76,4 @@ ShowConnectionTimer = true
 ShowRxTxByteCounts = true
 ResetStatisticsWhenPortOpens = true
 RefreshInterval = 100
-WindowPosition = 30,234,700,480
+WindowPosition = 30,233,700,480

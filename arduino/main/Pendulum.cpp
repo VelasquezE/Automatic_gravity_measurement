@@ -73,11 +73,11 @@ void Pendulum::holdReleasePendulum()
   /* Holds whem measurement is over, waits, 
      and releases again
   */
-  unsigned long currentTime = millis();
   static int lastState = 0;
   static unsigned long timeElectromagnetTurnOn = 0;
+  unsigned long currentTime = millis();
 
-  if (currentTime - timeElectromagnetTurnOn > 3000)
+  if ((currentTime - timeElectromagnetTurnOn) > TIME_OFF_ON)
   {
     timeElectromagnetTurnOn = currentTime;
 
