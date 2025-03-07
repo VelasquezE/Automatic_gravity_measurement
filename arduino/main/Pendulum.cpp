@@ -70,16 +70,16 @@ float Pendulum::calculatePeriod()
 
 void Pendulum::holdReleasePendulum()
 {
-  /* Holds whem measurement is over, waits, 
-     and releases again
+  /* Holds and realeases the period
+     according to TIME_OFF_ON
   */
   static int lastState = 0;
-  static unsigned long timeElectromagnetTurnOn = 0;
+  static unsigned long lastOnOffTime = 0;
   unsigned long currentTime = millis();
 
-  if ((currentTime - timeElectromagnetTurnOn) > TIME_OFF_ON)
+  if ((currentTime - lastOnOffTime) > TIME_OFF_ON)
   {
-    timeElectromagnetTurnOn = currentTime;
+    lastOnOffTime = currentTime;
 
     if (lastState == 0)
     {
